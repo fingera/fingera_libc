@@ -1,0 +1,1 @@
+[![Build Status](https://travis-ci.org/fingera/fingera_libc.svg?branch=master)](https://travis-ci.org/fingera/fingera_libc) [![Build status](https://ci.appveyor.com/api/projects/status/eq5s21ojjh0f7byb/branch/master?svg=true)](https://ci.appveyor.com/project/fingera/fingera-libc/branch/master)
