@@ -48,3 +48,7 @@ add_executable( base64_test base64.cpp )
 target_link_libraries( base64_test fingera_libc )
 add_test(NAME base64_test COMMAND base64_test)
 
+add_executable( compress_integer_test compress_integer.cpp )
+target_link_libraries( compress_integer_test fingera_libc )
+add_test(NAME compress_integer_test COMMAND compress_integer_test)
+
