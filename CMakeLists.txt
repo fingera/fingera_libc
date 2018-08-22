@@ -14,6 +14,7 @@ add_library(fingera_libc
   src/hash/ripemd160.c
   src/hash/sha1.c
   src/hash/sha2.c
+  src/btc/hash.c
 )
 
 target_link_libraries(fingera_libc)
