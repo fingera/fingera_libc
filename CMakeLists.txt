@@ -11,6 +11,9 @@ add_library(fingera_libc
   src/hex.c
   src/base64.c
   src/compress_integer.c
+  src/hash/ripemd160.c
+  src/hash/sha1.c
+  src/hash/sha2.c
 )
 
 target_link_libraries(fingera_libc)

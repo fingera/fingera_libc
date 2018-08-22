@@ -3,6 +3,18 @@ shallow_clone: true
 
 environment:
   matrix:
+  - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
+    CMAKE_GENERATOR: "MinGW Makefiles"
+    CXX_PATH: 'C:\mingw-w64\i686-5.3.0-posix-dwarf-rt_v4-rev0\mingw32\bin'
+  - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
+    CMAKE_GENERATOR: "MinGW Makefiles"
+    CXX_PATH: 'C:\mingw-w64\i686-6.3.0-posix-dwarf-rt_v5-rev1\mingw32\bin'
+  - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
+    CMAKE_GENERATOR: "MinGW Makefiles"
+    CXX_PATH: 'C:\mingw-w64\x86_64-6.3.0-posix-seh-rt_v5-rev1\mingw64\bin'
+  - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
+    CMAKE_GENERATOR: "MinGW Makefiles"
+    CXX_PATH: 'C:\mingw-w64\x86_64-7.3.0-posix-seh-rt_v5-rev0\mingw64\bin'
   - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
     CMAKE_GENERATOR: "Visual Studio 15 2017 Win64"
   - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
@@ -14,6 +26,15 @@ environment:
 
 matrix:
   fast_finish: true
+  
+
+install:
+- ps: |
+    if ($env:CXX_PATH -ne "") {
+        $env:path = $env:path.replace("C:\Program Files\Git\usr\bin;", "")
+        $env:path += ";$env:CXX_PATH"
+    }
+
 
 before_build:
   - cmake --version
@@ -23,4 +44,5 @@ build_script:
   - cmake --build cmake_build
 
 test_script:
-  - cmake --build cmake_build --target RUN_TESTS
+  - cd cmake_build
+  - ctest -C Debug

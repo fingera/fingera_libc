@@ -19,7 +19,7 @@ extern "C" {
 
 /**
  * @brief 无符号整数编码
- * 
+ *
  * @param value 需要压缩的整数
  * @param buf 放入缓冲区（缓冲区大小确保10个字节以上）
  * @return size_t 使用字节数(如果为0则表示失败)
@@ -28,7 +28,7 @@ size_t fingera_encode_varint(uint64_t value, void *buf);
 
 /**
  * @brief 无符号整数解码
- * 
+ *
  * @param buf 读取缓冲区
  * @param size 大小
  * @param out 输出的无符号整数
@@ -38,7 +38,7 @@ size_t fingera_decode_varint(const void *buf, size_t size, uint64_t *out);
 
 /**
  * @brief 带符号整数编码
- * 
+ *
  * @param value 需要压缩的整数
  * @param buf 放入缓冲区（缓冲区大小确保10个字节以上）
  * @return size_t 使用字节数(如果为0则表示失败)
@@ -47,7 +47,7 @@ size_t fingera_encode_zigzag(int64_t value, void *buf);
 
 /**
  * @brief 带符号整数解码
- * 
+ *
  * @param buf 读取缓冲区
  * @param size 大小
  * @param out 输出的带符号整数

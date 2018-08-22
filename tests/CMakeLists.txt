@@ -52,3 +52,7 @@ add_executable( compress_integer_test compress_integer.cpp )
 target_link_libraries( compress_integer_test fingera_libc )
 add_test(NAME compress_integer_test COMMAND compress_integer_test)
 
+add_executable( hash_test hash.cpp )
+target_link_libraries( hash_test fingera_libc )
+add_test(NAME hash_test COMMAND hash_test)
+
