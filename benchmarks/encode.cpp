@@ -1,3 +1,4 @@
+#include <fingera_libc/base32.h>
 #include <fingera_libc/hex.h>
 
 #include <benchmark/benchmark.h>
@@ -19,5 +20,14 @@ static void from_hex(benchmark::State& state) {
   }
 }
 
-BENCHMARK(to_hex);
-BENCHMARK(from_hex);
+static void to_base32(benchmark::State& state) {
+  char buffer[2048];
+  char str[4096];
+  for (auto _ : state) {
+    fingera_to_base32(buffer, sizeof(buffer), str);
+  }
+}
+
+BENCHMARK(to_base32);
+// BENCHMARK(to_hex);
+// BENCHMARK(from_hex);

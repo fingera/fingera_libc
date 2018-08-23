@@ -10,6 +10,8 @@ option(FINGERA_LIBC_ENABLE_BENCHMARKS "Benchmarks" OFF)
 add_library(fingera_libc
   src/hex.c
   src/base64.c
+  src/base32.c
+  src/base58.c
   src/compress_integer.c
   src/hash/ripemd160.c
   src/hash/sha1.c

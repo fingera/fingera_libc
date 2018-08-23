@@ -21,7 +21,7 @@ extern "C" {
  * @param buf_size 数据长度
  * @return size_t 编码后的长度
  */
-inline size_t fingera_to_base64_length(size_t buf_size) {
+static inline size_t fingera_to_base64_length(size_t buf_size) {
   return ((buf_size + 2) / 3) * 4;
 }
 
@@ -32,7 +32,7 @@ inline size_t fingera_to_base64_length(size_t buf_size) {
  * @param buf_size 数据长度
  * @return size_t 编码后的长度
  */
-inline size_t fingera_to_base64_urlsafe_length(size_t buf_size) {
+static inline size_t fingera_to_base64_urlsafe_length(size_t buf_size) {
   size_t tail = buf_size % 3;
   size_t len = (buf_size / 3) * 4;
   if (tail == 1)
@@ -72,7 +72,7 @@ void fingera_to_base64_urlsafe(const void *buf, size_t buf_size, char *str);
  * @param str_len 编码长度
  * @return size_t 解码长度
  */
-inline size_t fingera_from_base64_urlsafe_length(size_t str_len) {
+static inline size_t fingera_from_base64_urlsafe_length(size_t str_len) {
   size_t tail = str_len % 4;
   size_t len = (str_len / 4) * 3;
   if (tail == 2)
@@ -88,7 +88,8 @@ inline size_t fingera_from_base64_urlsafe_length(size_t str_len) {
  * @param str_len 编码的长度
  * @return size_t 解码后的长度
  */
-inline size_t fingera_from_base64_length(const char *str, size_t str_len) {
+static inline size_t fingera_from_base64_length(const char *str,
+                                                size_t str_len) {
   if (str_len > 0 && str[str_len - 1] == '=') {
     str_len--;
     if (str_len > 0 && str[str_len - 1] == '=') str_len--;

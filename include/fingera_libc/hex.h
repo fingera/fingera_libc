@@ -20,7 +20,9 @@ extern "C" {
  * @param buf_size 数据长度
  * @return size_t HEX编码需要的长度
  */
-inline size_t fingera_to_hex_length(size_t buf_size) { return buf_size * 2; }
+static inline size_t fingera_to_hex_length(size_t buf_size) {
+  return buf_size * 2;
+}
 /**
  * @brief 将数据编码为HEX
  * 1. str的长度必须为fingera_to_hex_length(buf_size)
@@ -39,7 +41,7 @@ void fingera_to_hex(const void *buf, size_t buf_size, char *str, int upper);
  * @param str_length HEX数据长度
  * @return size_t 解码后的数据长度
  */
-inline size_t fingera_from_hex_length(size_t str_length) {
+static inline size_t fingera_from_hex_length(size_t str_length) {
   return (str_length + 1) / 2;
 }
 

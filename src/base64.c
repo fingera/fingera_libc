@@ -1,11 +1,11 @@
 #include <fingera_libc/base64.h>
 #include <stdint.h>
 
-const char BASE64_STANDARD_ENCODE[65] =
+static const char BASE64_STANDARD_ENCODE[65] =
     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-const char BASE64_URLSAFE_ENCODE[65] =
+static const char BASE64_URLSAFE_ENCODE[65] =
     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
-const unsigned char BASE64_STANDARD_DECODE[256] = {
+static const unsigned char BASE64_STANDARD_DECODE[256] = {
     0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
     0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
     0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
@@ -34,7 +34,7 @@ const unsigned char BASE64_STANDARD_DECODE[256] = {
     0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
     0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
 };
-const unsigned char BASE64_URLSAFE_DECODE[256] = {
+static const unsigned char BASE64_URLSAFE_DECODE[256] = {
     0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
     0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
     0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
@@ -73,11 +73,12 @@ void _fingera_to_base64(const void *buf, size_t buf_size, char *out,
       url_safe ? BASE64_URLSAFE_ENCODE : BASE64_STANDARD_ENCODE;
 
   for (size_t i = 0; i < loop_size; i += 3) {
-    const uint8_t *src = input;
-    uint8_t byte1 = src[0] >> 2;
-    uint8_t byte2 = ((src[0] & 0x3) << 4) | (src[1] >> 4);
-    uint8_t byte3 = ((src[1] & 0xF) << 2) | (src[2] >> 6);
-    uint8_t byte4 = src[2] & 0x3F;
+    // 11111111 11111111 11111111
+    // 11111122 22223333 33444444
+    uint8_t byte1 = input[0] >> 2;
+    uint8_t byte2 = ((input[0] & 0x3) << 4) | (input[1] >> 4);
+    uint8_t byte3 = ((input[1] & 0xF) << 2) | (input[2] >> 6);
+    uint8_t byte4 = input[2] & 0x3F;
     out[0] = encode_str[byte1];
     out[1] = encode_str[byte2];
     out[2] = encode_str[byte3];
@@ -125,15 +126,18 @@ size_t _fingera_from_base64(const char *str, size_t str_len, void *buf,
       url_safe ? BASE64_URLSAFE_DECODE : BASE64_STANDARD_DECODE;
 
   for (size_t i = 0; i < loop_size; i += 4) {
+    // 11111111 11111111 11111111
+    // 11111122 22223333 33444444
     byte1 = decode_str[input[0]];
     byte2 = decode_str[input[1]];
     byte3 = decode_str[input[2]];
     byte4 = decode_str[input[3]];
 
-    if (byte1 == 0xFF || byte2 == 0xFF || byte3 == 0xFF || byte4 == 0xFF) break;
+    if (byte1 == 0xFF || byte2 == 0xFF || byte3 == 0xFF || byte4 == 0xFF)
+      return output - (uint8_t *)buf;
 
-    output[0] = (byte1 << 2) | ((byte2 >> 4) & 0x3);
-    output[1] = (byte2 << 4) | ((byte3 >> 2) & 0xF);
+    output[0] = (byte1 << 2) | (byte2 >> 4);
+    output[1] = (byte2 << 4) | (byte3 >> 2);
     output[2] = (byte3 << 6) | byte4;
 
     output += 3;

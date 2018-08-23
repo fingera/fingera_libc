@@ -34,6 +34,14 @@ void fingera_btc_hash160(const void *msg, size_t msg_len, void *hash);
  */
 void fingera_btc_hash256(const void *msg, size_t msg_len, void *hash);
 
+/**
+ * @brief 计算merkle树时需要用到
+ * 计算出上一层的merkle树
+ *
+ * @param out 输出hash 32*blocks
+ * @param in 输入数据 64*blocks
+ * @param blocks 输出输入数量
+ */
 void fingera_btc_hash256_d64(void *out, const void *in, size_t blocks);
 
 #if defined(__cplusplus)

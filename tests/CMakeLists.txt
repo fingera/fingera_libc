@@ -56,3 +56,11 @@ add_executable( hash_test hash.cpp )
 target_link_libraries( hash_test fingera_libc )
 add_test(NAME hash_test COMMAND hash_test)
 
+add_executable( base32_test base32.cpp )
+target_link_libraries( base32_test fingera_libc )
+add_test(NAME base32_test COMMAND base32_test)
+
+add_executable( base58_test base58.cpp )
+target_link_libraries( base58_test fingera_libc )
+add_test(NAME base58_test COMMAND base58_test)
+
