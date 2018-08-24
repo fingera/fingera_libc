@@ -1,6 +1,10 @@
 version: '{build}'
 shallow_clone: true
 
+configuration:
+  - Debug
+  - Release
+
 environment:
   matrix:
   - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
@@ -29,20 +33,17 @@ matrix:
   
 
 install:
-- ps: |
-    if ($env:CXX_PATH -ne "") {
-        $env:path = $env:path.replace("C:\Program Files\Git\usr\bin;", "")
-        $env:path += ";$env:CXX_PATH"
-    }
+  # git bash conflicts with MinGW makefiles
+  - if "%CMAKE_GENERATOR%"=="MinGW Makefiles" (set "PATH=%PATH:C:\Program Files\Git\usr\bin;=%")
+  - if not "%CXX_PATH%"=="" (set "PATH=%PATH%;%CXX_PATH%")
 
-
-before_build:
-  - cmake --version
-  - cmake -DBUILD_TESTING=ON -G "%CMAKE_GENERATOR%" -Bcmake_build -H.
 
 build_script:
-  - cmake --build cmake_build
+  - md _build -Force
+  - cd _build
+  - echo %configuration%
+  - cmake -G "%CMAKE_GENERATOR%" "-DCMAKE_BUILD_TYPE=%configuration%" -DBUILD_TESTING=ON ..
+  - cmake --build . --config %configuration%
 
 test_script:
-  - cd cmake_build
-  - ctest -C Debug
+  - ctest -C %configuration% --timeout 300 --output-on-failure

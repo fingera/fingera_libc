@@ -46,7 +46,9 @@ TEST(bech32, custom) {
     hrp[hrp_size] = '\0';
     EXPECT_STRCASEEQ(ret.first.c_str(), hrp);
     EXPECT_EQ(size, ret.second.size());
-    EXPECT_ZERO(memcmp(buffer, ret.second.data(), size));
+    if (ret.second.data()) {
+      EXPECT_ZERO(memcmp(buffer, ret.second.data(), size));
+    }
   }
 }
 

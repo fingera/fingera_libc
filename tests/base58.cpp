@@ -28,7 +28,9 @@ static void encdec_test(const std::string& hex, const std::string& encoded) {
     if (fingera_from_base58_length(out_size) < sizeof(out_data)) {
       size_t data_size = fingera_from_base58(out_char, out_size, out_data);
       EXPECT_EQ(data_size, data.size());
-      EXPECT_ZERO(memcmp(out_data, data.data(), data_size));
+      if (data.data()) {
+        EXPECT_ZERO(memcmp(out_data, data.data(), data_size));
+      }
     }
   }
 }
