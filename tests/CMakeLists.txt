@@ -64,3 +64,11 @@ add_executable( base58_test base58.cpp )
 target_link_libraries( base58_test fingera_libc )
 add_test(NAME base58_test COMMAND base58_test)
 
+add_executable( bech32_test btc/bech32.cpp btc/btc_bech32.cpp )
+target_link_libraries( bech32_test fingera_libc )
+add_test(NAME bech32_test COMMAND bech32_test)
+
+add_executable( address_test btc/address.cpp )
+target_link_libraries( address_test fingera_libc )
+add_test(NAME address_test COMMAND address_test)
+

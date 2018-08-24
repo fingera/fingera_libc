@@ -24,7 +24,7 @@ static const int8_t BASE58_DECODE[256] = {
     -1, -1, -1, -1, -1, -1, -1, -1, -1,
 };
 
-#define DEFAULT_STACK_ALLOC 1024
+#define DEFAULT_STACK_ALLOC 128
 
 size_t fingera_to_base58(const void *buf, size_t buf_size, char *str) {
   uint8_t _stack_buffer_[DEFAULT_STACK_ALLOC];
@@ -50,7 +50,7 @@ size_t fingera_to_base58(const void *buf, size_t buf_size, char *str) {
   while (begin != end) {
     int carry = *begin;
     int i = 0;
-    for (int it = size - 1; (carry != 0 || i < length) && it >= 0; it--, i++) {
+    for (int it = (int)size - 1; (carry != 0 || i < length) && it >= 0; it--, i++) {
       carry += 256 * b58[it];
       b58[it] = carry % 58;
       carry /= 58;
@@ -87,7 +87,7 @@ size_t fingera_from_base58(const char *str, size_t str_len, void *buf) {
     str++;
   }
 
-  int size = (str_end - str) * 733 / 1000 + 1;
+  int size = (int)(str_end - str) * 733 / 1000 + 1;
   uint8_t *b256;
   if (size <= sizeof(_stack_buffer_))
     b256 = _stack_buffer_;

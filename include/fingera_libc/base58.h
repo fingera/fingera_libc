@@ -1,6 +1,5 @@
 /**
  * @brief Base58
- * 1. 在编码解码时需要一个缓存，默认1K以下在栈上分配
  *
  * @file base58.h
  * @author liuyujun@fingera.cn

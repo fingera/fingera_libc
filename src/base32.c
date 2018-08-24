@@ -3,6 +3,9 @@
 #include <string.h>
 
 static const char BASE32_ENCODE[33] = "abcdefghijklmnopqrstuvwxyz234567";
+static const char BASE32_ENCODE_RAW[32] = {
+    0,  1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 13, 14, 15,
+    16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31};
 static const uint8_t BASE32_DECODE[256] = {
     0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
     0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
@@ -27,6 +30,29 @@ static const uint8_t BASE32_DECODE[256] = {
     0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
     0xFF, 0xFF, 0xFF, 0xFF};
 
+static const uint8_t BASE32_DECODE_RAW[256] = {
+    0,    1,    2,    3,    4,    5,    6,    7,    8,    9,    10,   11,
+    12,   13,   14,   15,   16,   17,   18,   19,   20,   21,   22,   23,
+    24,   25,   26,   27,   28,   29,   30,   31,   0xFF, 0xFF, 0xFF, 0xFF,
+    0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+    0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+    0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+    0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+    0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+    0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+    0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+    0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+    0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+    0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+    0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+    0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+    0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+    0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+    0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+    0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+    0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+    0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+    0xFF, 0xFF, 0xFF, 0xFF};
 /*
   1 个字节 编码成2个字节 最后一个字节3位 需要增加6个padding
   2 个字节 编码成4个字节 最后一个字节1位 需要增加4个padding
@@ -36,11 +62,12 @@ static const uint8_t BASE32_DECODE[256] = {
 */
 static const int TAIL_TO_BYTES[8] = {0, 0, 1, 0, 2, 3, 0, 4};
 
-void fingera_to_base32(const void *buf, size_t buf_size, char *out) {
+static size_t _fingera_to_base32(const void *buf, size_t buf_size, char *out,
+                                 int is_raw) {
   size_t tail_len = buf_size % 5;
   size_t loop_size = buf_size - tail_len;
   const uint8_t *input = (const uint8_t *)buf;
-  const char *encode_str = BASE32_ENCODE;
+  const char *encode_str = is_raw ? BASE32_ENCODE_RAW : BASE32_ENCODE;
   uint8_t byte1, byte2, byte3, byte4, byte5, byte6, byte7, byte8;
 
   for (size_t i = 0; i < loop_size; i += 5) {
@@ -63,18 +90,24 @@ void fingera_to_base32(const void *buf, size_t buf_size, char *out) {
     out += 8;
     input += 5;
   }
+  size_t size = (loop_size / 5) * 8;
   switch (tail_len) {
     case 1:
       byte1 = input[0] >> 3;
       byte2 = ((input[0] & 7) << 2);
       out[0] = encode_str[byte1];
       out[1] = encode_str[byte2];
-      out[2] = '=';
-      out[3] = '=';
-      out[4] = '=';
-      out[5] = '=';
-      out[6] = '=';
-      out[7] = '=';
+      if (!is_raw) {
+        size += 8;
+        out[2] = '=';
+        out[3] = '=';
+        out[4] = '=';
+        out[5] = '=';
+        out[6] = '=';
+        out[7] = '=';
+      } else {
+        size += 2;
+      }
       break;
     case 2:
       byte1 = input[0] >> 3;
@@ -85,10 +118,15 @@ void fingera_to_base32(const void *buf, size_t buf_size, char *out) {
       out[1] = encode_str[byte2];
       out[2] = encode_str[byte3];
       out[3] = encode_str[byte4];
-      out[4] = '=';
-      out[5] = '=';
-      out[6] = '=';
-      out[7] = '=';
+      if (!is_raw) {
+        size += 8;
+        out[4] = '=';
+        out[5] = '=';
+        out[6] = '=';
+        out[7] = '=';
+      } else {
+        size += 4;
+      }
       break;
     case 3:
       byte1 = input[0] >> 3;
@@ -101,9 +139,14 @@ void fingera_to_base32(const void *buf, size_t buf_size, char *out) {
       out[2] = encode_str[byte3];
       out[3] = encode_str[byte4];
       out[4] = encode_str[byte5];
-      out[5] = '=';
-      out[6] = '=';
-      out[7] = '=';
+      if (!is_raw) {
+        size += 8;
+        out[5] = '=';
+        out[6] = '=';
+        out[7] = '=';
+      } else {
+        size += 5;
+      }
       break;
     case 4:
       byte1 = input[0] >> 3;
@@ -120,11 +163,25 @@ void fingera_to_base32(const void *buf, size_t buf_size, char *out) {
       out[4] = encode_str[byte5];
       out[5] = encode_str[byte6];
       out[6] = encode_str[byte7];
-      out[7] = '=';
+      if (!is_raw) {
+        size += 8;
+        out[7] = '=';
+      } else {
+        size += 7;
+      }
       break;
     default:
       break;
   }
+  return size;
+}
+
+void fingera_to_base32(const void *buf, size_t buf_size, char *out) {
+  _fingera_to_base32(buf, buf_size, out, 0);
+}
+
+size_t fingera_to_base32_raw(const void *buf, size_t buf_size, void *out) {
+  return _fingera_to_base32(buf, buf_size, out, 1);
 }
 
 static inline size_t base32_strlen(const char *str, size_t str_len) {
@@ -139,21 +196,28 @@ size_t fingera_from_base32_length(const char *str, size_t str_len) {
   return size + TAIL_TO_BYTES[new_len % 8];
 }
 
-size_t fingera_from_base32(const char *str, size_t str_len, void *buf) {
+size_t fingera_from_base32_raw_length(size_t new_len) {
+  size_t size = (new_len / 8) * 5;
+  return size + TAIL_TO_BYTES[new_len % 8];
+}
+
+static size_t _fingera_from_base32(const char *str, size_t str_len, void *buf,
+                                   int is_raw) {
   size_t new_len = base32_strlen(str, str_len);
   size_t tail = new_len % 8;
   size_t blocks = new_len / 8;
   const char *tail_str = str + blocks * 8;
   uint8_t *out = (uint8_t *)buf;
+  const uint8_t *decode_string = is_raw ? BASE32_DECODE_RAW : BASE32_DECODE;
   for (size_t i = 0; i < blocks; i++) {
-    uint8_t byte1 = BASE32_DECODE[str[i * 8 + 0]];
-    uint8_t byte2 = BASE32_DECODE[str[i * 8 + 1]];
-    uint8_t byte3 = BASE32_DECODE[str[i * 8 + 2]];
-    uint8_t byte4 = BASE32_DECODE[str[i * 8 + 3]];
-    uint8_t byte5 = BASE32_DECODE[str[i * 8 + 4]];
-    uint8_t byte6 = BASE32_DECODE[str[i * 8 + 5]];
-    uint8_t byte7 = BASE32_DECODE[str[i * 8 + 6]];
-    uint8_t byte8 = BASE32_DECODE[str[i * 8 + 7]];
+    uint8_t byte1 = decode_string[str[i * 8 + 0]];
+    uint8_t byte2 = decode_string[str[i * 8 + 1]];
+    uint8_t byte3 = decode_string[str[i * 8 + 2]];
+    uint8_t byte4 = decode_string[str[i * 8 + 3]];
+    uint8_t byte5 = decode_string[str[i * 8 + 4]];
+    uint8_t byte6 = decode_string[str[i * 8 + 5]];
+    uint8_t byte7 = decode_string[str[i * 8 + 6]];
+    uint8_t byte8 = decode_string[str[i * 8 + 7]];
     if (byte1 == 0xFF || byte2 == 0xFF || byte3 == 0xFF || byte4 == 0xFF ||
         byte5 == 0xFF || byte6 == 0xFF || byte7 == 0xFF || byte8 == 0xFF)
       return out - (uint8_t *)buf;
@@ -168,23 +232,31 @@ size_t fingera_from_base32(const char *str, size_t str_len, void *buf) {
   }
   uint8_t tail_bytes = TAIL_TO_BYTES[tail];
   if (tail_bytes > 0) {
-    uint8_t byte1 = BASE32_DECODE[tail_str[0]];
-    uint8_t byte2 = BASE32_DECODE[tail_str[1]];
+    uint8_t byte1 = decode_string[tail_str[0]];
+    uint8_t byte2 = decode_string[tail_str[1]];
     *out++ = (byte1 << 3) | (byte2 >> 2);
     if (tail_bytes > 1) {
-      uint8_t byte3 = BASE32_DECODE[tail_str[2]];
-      uint8_t byte4 = BASE32_DECODE[tail_str[3]];
+      uint8_t byte3 = decode_string[tail_str[2]];
+      uint8_t byte4 = decode_string[tail_str[3]];
       *out++ = (byte2 << 6) | (byte3 << 1) | (byte4 >> 4);
       if (tail_bytes > 2) {
-        uint8_t byte5 = BASE32_DECODE[tail_str[4]];
+        uint8_t byte5 = decode_string[tail_str[4]];
         *out++ = (byte4 << 4) | (byte5 >> 1);
         if (tail_bytes > 3) {
-          uint8_t byte6 = BASE32_DECODE[tail_str[5]];
-          uint8_t byte7 = BASE32_DECODE[tail_str[6]];
+          uint8_t byte6 = decode_string[tail_str[5]];
+          uint8_t byte7 = decode_string[tail_str[6]];
           *out++ = (byte5 << 7) | (byte6 << 2) | (byte7 >> 3);
         }
       }
     }
   }
   return out - (uint8_t *)buf;
+}
+
+size_t fingera_from_base32(const char *str, size_t str_len, void *buf) {
+  return _fingera_from_base32(str, str_len, buf, 0);
+}
+
+size_t fingera_from_base32_raw(const void *buf, size_t buf_size, void *out) {
+  return _fingera_from_base32((const char *)buf, buf_size, out, 1);
 }

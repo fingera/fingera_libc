@@ -21,6 +21,7 @@ static void encdec_test(const std::string& hex, const std::string& encoded) {
     EXPECT_TRUE(out_size < sizeof(out_char));
     out_char[out_size] = '\0';
     EXPECT_EQ(encoded, out_char);
+    EXPECT_EQ(encoded.size(), out_size);
 
     uint8_t out_data[4096];
     EXPECT_TRUE(fingera_from_base58_length(out_size) < sizeof(out_data));

@@ -17,6 +17,10 @@ add_library(fingera_libc
   src/hash/sha1.c
   src/hash/sha2.c
   src/btc/hash.c
+  src/btc/bech32.c
+  src/btc/base58_check.c
+  src/btc/chain_parameters.c
+  src/btc/address.c
 )
 
 target_link_libraries(fingera_libc)

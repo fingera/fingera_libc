@@ -20,10 +20,9 @@ void _hash256_d64_transform(void *out, const void *in);
 void fingera_btc_hash256_d64(void *out, const void *in, size_t blocks) {
   char *_out = (char *)out;
   const char *_in = (const char *)in;
-  while (blocks) {
+  while (blocks--) {
     _hash256_d64_transform(_out, _in);
     _out += 32;
     _in += 64;
-    --blocks;
   }
 }
