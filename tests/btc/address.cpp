@@ -93,7 +93,56 @@ static void test_address(const std::string &encoded, const std::string &hex,
   }
 }
 
+TEST(address, invalid) {
+  char out[256];
+  size_t out_size = 1;
+  EXPECT_ZERO(fingera_to_address_pubkey("keyid", 5, out, 1,
+                                        &g_mainnet_chain_parameters));
+  EXPECT_ZERO(fingera_to_address_script("keyid", 5, out, 1,
+                                        &g_mainnet_chain_parameters));
+  EXPECT_EQ(fingera_btc_address_decode("keyid", 5, out, &out_size,
+                                       &g_mainnet_chain_parameters),
+            BTC_BAD_ADDRESS);
+}
+
 TEST(address, custom) {
+  uint8_t buffer[512];
+  char str[1024];
+  const std::string out_str =
+      "GFSDkyzbczs9RcQhey9QeYCkdiuDBpm9zwZ9E41pDnXLKrrkqJZqcTUewvCchKPUdARd6Ks2"
+      "T7VLrPhRE8JfVKE1CkMk5YpfFRQv6QPE1RUWKSrgtj5Nv9xQUW7A4ZHzpaJeqrAzHEHAMaXd"
+      "1YcKjV67bPvmmWEgbYWmoy9QpU6S4zbLq5Say71bvaUP7SZtttRHBnvA9hzzCT453KbGZpQ2"
+      "VsbQFmGamwTs3Wi1eZTcnmuWGKPQik3UcQbqPkHpe5XwVyQYN1Te4EXRQ57Y2qtuSQKS8V9b"
+      "2brSF9p8uKBgt7XuymMiMhGpaMU2kasoqFuprCXcRoLBGYdfsPaWUeDBBUq5PXeJmrdvERRq"
+      "mYNpt3gFkf4PgrDLT15kdmJEmELpXwKkK2MBbm3ZbBZpVkiv5CzKT6U1cVen2n3tFAQnfW7N"
+      "JHVhiYvEXKwr315XqWUHtBsoeNyfZULFXcLahx22ThWdiR2DGCB17Uox9CxcxidhnwXn3HUE"
+      "2svGbaU4tSvuHtEpPd86NQaGu4CRJh5JQwabNLpe2QXi5p3nANNK7YCBNVo7AozRriJ8E4YF"
+      "uhdu2wXaG9bzL7YC2aWciNWhoCxrPNFrRrm9bz5qew58T8RUCykoeuhBfyLWcUinknM6mjGe"
+      "uei7tGcZatTWDHGLKrohMPGuKW1kEFcBnhgD1BX7PFsgz6HNJs3Bv6QsqeiVVUMxC";
+  memset(buffer, 8, sizeof(buffer));
+  memset(str, 0, sizeof(str));
+
+  fingera_hex_dump(str, sizeof(str), 1);
+  size_t str_len =
+      fingera_to_base58_check(buffer, sizeof(buffer), "prefix", 6, str);
+  EXPECT_LE(str_len, sizeof(str));
+  EXPECT_EQ(str_len, out_str.size());
+  str[str_len] = '\0';
+  EXPECT_EQ(out_str, str);
+
+  str_len = sizeof(str);
+  EXPECT_ZERO(fingera_btc_address_decode(
+      "xx1qpqyqszqgpqyqszqgpqyqszqgpqyqszqg23t9q4", 42, str, &str_len,
+      &g_mainnet_chain_parameters));
+  str_len = sizeof(str);
+  EXPECT_ZERO(fingera_btc_address_decode(
+      "bc1qpqyqszqgpqyqszqgpqyqszqgpqyqszqgpqyqpnzxff", 46, str, &str_len,
+      &g_mainnet_chain_parameters));
+  str_len = sizeof(str);
+  EXPECT_ZERO(fingera_btc_address_decode(
+      "bc17pqyqszqgpqyqszqgpqyqszqgpqyqszqg8d0gmc", 42, str, &str_len,
+      &g_mainnet_chain_parameters));
+
   test_address("1AGNa15ZQXAZUgFiqJ2i7Z2DPU2J6hW62i",
                "76a91465a16059864a2fdbc7c99a4723a8395bc6f188eb88ac",
                &g_mainnet_chain_parameters);

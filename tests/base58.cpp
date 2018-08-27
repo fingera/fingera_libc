@@ -49,6 +49,14 @@ TEST(base58, custom) {
       fingera_from_base58(result.c_str(), result.size(), out_char);
   EXPECT_EQ(out_char_size, sizeof(buffer));
   EXPECT_ZERO(memcmp(out_char, buffer, sizeof(buffer)));
+  out_char_size = fingera_from_base58(
+      " vYxp6yFC7qiVtK1RcGQQt3L6EqTc8YhEDLnSMLqDvp8D ", 46, out_char);
+  EXPECT_EQ(out_char_size, sizeof(buffer));
+  EXPECT_ZERO(memcmp(out_char, buffer, sizeof(buffer)));
+  EXPECT_EQ(
+      fingera_from_base58(" vYxp6yFC7qiVtK1RcGQQt3L6EqTc8YhEDLnSMLqDvp8D aa",
+                          48, out_char),
+      0);
 
   encdec_test("", "");
   encdec_test("61", "2g");

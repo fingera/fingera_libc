@@ -15,6 +15,7 @@ TEST(base32, custom) {
       "",         "my======", "mzxq====",         "mzxw6===",
       "mzxw6yq=", "mzxw6ytb", "mzxw6ytboi======", "mfrggzdfmztwq2lknnwg23q="};
   char out_char[256];
+  size_t out_size;
   for (unsigned int i = 0; i < sizeof(vstrIn) / sizeof(vstrIn[0]); i++) {
     memset(out_char, 0, sizeof(out_char));
     fingera_to_base32(vstrIn[i].c_str(), vstrIn[i].size(), out_char);
@@ -27,5 +28,16 @@ TEST(base32, custom) {
         fingera_from_base32(vstrOut[i].c_str(), vstrOut[i].size(), out_char),
         vstrIn[i].size());
     EXPECT_EQ(vstrIn[i], out_char);
+
+    memset(out_char, 0, sizeof(out_char));
+    out_size =
+        fingera_to_base32_raw(vstrIn[i].c_str(), vstrIn[i].size(), out_char);
+    char values[256];
+    size_t size_of_values = fingera_from_base32_raw(out_char, out_size, values);
+    EXPECT_EQ(size_of_values, vstrIn[i].size());
+    values[size_of_values] = '\0';
+    EXPECT_EQ(vstrIn[i], values);
   }
+
+  EXPECT_EQ(fingera_from_base32("mzxw6ytb#mzxw6ytb", 17, out_char), 5);
 }

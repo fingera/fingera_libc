@@ -1,6 +1,7 @@
 #include <assert.h>
 #include <ctype.h>
 #include <fingera_libc/base58.h>
+#include <fingera_libc/sl/buffer.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
@@ -24,10 +25,7 @@ static const int8_t BASE58_DECODE[256] = {
     -1, -1, -1, -1, -1, -1, -1, -1, -1,
 };
 
-#define DEFAULT_STACK_ALLOC 128
-
 size_t fingera_to_base58(const void *buf, size_t buf_size, char *str) {
-  uint8_t _stack_buffer_[DEFAULT_STACK_ALLOC];
   // Skip & count leading zeroes.
   const uint8_t *begin = (const uint8_t *)buf;
   const uint8_t *end = begin + buf_size;
@@ -38,11 +36,7 @@ size_t fingera_to_base58(const void *buf, size_t buf_size, char *str) {
   }
   // Allocate enough space in big-endian base58 representation.
   size_t size = (end - begin) * 138 / 100 + 1;
-  uint8_t *b58;
-  if (size <= sizeof(_stack_buffer_))
-    b58 = _stack_buffer_;
-  else
-    b58 = (uint8_t *)malloc(size);
+  DECLARE_BUFFER(uint8_t, b58, size);
   memset(b58, 0, size);
 
   // Process the bytes.
@@ -50,7 +44,8 @@ size_t fingera_to_base58(const void *buf, size_t buf_size, char *str) {
   while (begin != end) {
     int carry = *begin;
     int i = 0;
-    for (int it = (int)size - 1; (carry != 0 || i < length) && it >= 0; it--, i++) {
+    for (int it = (int)size - 1; (carry != 0 || i < length) && it >= 0;
+         it--, i++) {
       carry += 256 * b58[it];
       b58[it] = carry % 58;
       carry /= 58;
@@ -68,13 +63,12 @@ size_t fingera_to_base58(const void *buf, size_t buf_size, char *str) {
   memset(str, '1', zeroes);
   while (iter != b58 + size) str[zeroes++] = BASE58_ENCODE[*iter++];
 
-  if (size > sizeof(_stack_buffer_)) free(b58);
+  FREE_BUFFER(b58);
 
   return zeroes;
 }
 
 size_t fingera_from_base58(const char *str, size_t str_len, void *buf) {
-  uint8_t _stack_buffer_[DEFAULT_STACK_ALLOC];
   const char *str_end = str + str_len;
   // Skip leading spaces.
   while (*str && isspace(*str)) {
@@ -88,18 +82,14 @@ size_t fingera_from_base58(const char *str, size_t str_len, void *buf) {
   }
 
   int size = (int)(str_end - str) * 733 / 1000 + 1;
-  uint8_t *b256;
-  if (size <= sizeof(_stack_buffer_))
-    b256 = _stack_buffer_;
-  else
-    b256 = (uint8_t *)malloc(size);
+  DECLARE_BUFFER(uint8_t, b256, size);
   memset(b256, 0, size);
 
   while (*str && !isspace(*str)) {
     // Decode base58 character
     int carry = BASE58_DECODE[(uint8_t)*str];
     if (carry == -1) {
-      if (size > sizeof(_stack_buffer_)) free(b256);
+      FREE_BUFFER(b256);
       return 0;
     }
     int i = 0;
@@ -116,7 +106,7 @@ size_t fingera_from_base58(const char *str, size_t str_len, void *buf) {
   // Skip trailing spaces.
   while (isspace(*str)) str++;
   if (*str != 0) {
-    if (size > sizeof(_stack_buffer_)) free(b256);
+    FREE_BUFFER(b256);
     return 0;
   }
   const uint8_t *it = b256 + (size - length);
@@ -126,6 +116,6 @@ size_t fingera_from_base58(const char *str, size_t str_len, void *buf) {
   while (it != b256 + size) {
     out[zeroes++] = *it++;
   }
-  if (size > sizeof(_stack_buffer_)) free(b256);
+  FREE_BUFFER(b256);
   return zeroes;
 }
