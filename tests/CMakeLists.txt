@@ -72,3 +72,7 @@ add_executable( address_test btc/address.cpp )
 target_link_libraries( address_test fingera_libc )
 add_test(NAME address_test COMMAND address_test)
 
+add_executable( random_test random.cpp )
+target_link_libraries( random_test fingera_libc )
+add_test(NAME random_test COMMAND random_test)
+

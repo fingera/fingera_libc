@@ -13,6 +13,8 @@ add_library(fingera_libc
   src/base32.c
   src/base58.c
   src/compress_integer.c
+  src/error.c
+  src/random.c
   src/hash/ripemd160.c
   src/hash/sha1.c
   src/hash/sha2.c

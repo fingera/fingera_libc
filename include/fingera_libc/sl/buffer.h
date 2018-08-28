@@ -14,12 +14,12 @@
   char name##_stack_buffer_[DEFAULT_STACK_BUFFER]; \
   type *name;                                      \
   int name##_in_heap;                              \
-  if (real_size > sizeof(name##_stack_buffer_)) {  \
-    name = (type *)malloc(real_size);              \
-    name##_in_heap = 1;                            \
-  } else {                                         \
+  if (real_size <= sizeof(name##_stack_buffer_)) { \
     name = (type *)name##_stack_buffer_;           \
     name##_in_heap = 0;                            \
+  } else {                                         \
+    name = (type *)malloc(real_size);              \
+    name##_in_heap = 1;                            \
   }
 
 #define FREE_BUFFER(name) \
