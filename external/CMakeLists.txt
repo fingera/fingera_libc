@@ -1,8 +1,8 @@
 
 # google test
 if (${BUILD_TESTING} STREQUAL "ON")
-  set(BUILD_GMOCK OFF)
-  set(BUILD_GTEST ON)
+#  set(BUILD_GMOCK OFF)
+#  set(BUILD_GTEST ON)
   set(gtest_disable_pthreads ON)
   add_subdirectory(googletest)
 endif()
