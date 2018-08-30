@@ -39,6 +39,7 @@ install:
 
 
 build_script:
+  - git submodule update --init --recursive
   - md _build -Force
   - cd _build
   - echo %configuration%

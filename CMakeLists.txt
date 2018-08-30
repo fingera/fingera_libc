@@ -3,8 +3,6 @@ cmake_minimum_required(VERSION 3.5)
 set( CMAKE_C_STANDARD 99 )
 set( CMAKE_CXX_STANDARD 11 )
 
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
-
 option(BUILD_TESTING "Enable test (depends on googletest)." OFF)
 option(FINGERA_LIBC_ENABLE_BENCHMARKS "Benchmarks" OFF)
 
@@ -27,9 +25,9 @@ add_library(fingera_libc
   src/btc/key.c
 )
 
-find_package(Secp256k1 REQUIRED)
+add_subdirectory(external)
 
-target_link_libraries(fingera_libc ${Secp256k1_LIBRARY})
+target_link_libraries(fingera_libc secp256k1)
 target_include_directories(fingera_libc
   PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include ${Secp256k1_INCLUDE_DIR})
 
