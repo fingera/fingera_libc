@@ -48,7 +48,6 @@ matrix:
       env:
         - COMPILER=clang++-3.8 C_COMPILER=clang-3.8 BUILD_TYPE=Debug
         - LIBCXX_BUILD=1
-        - EXTRA_FLAGS="-stdlib=libc++"
     - compiler: clang
       addons:
         apt:
@@ -57,7 +56,6 @@ matrix:
       env:
         - COMPILER=clang++-3.8 C_COMPILER=clang-3.8 BUILD_TYPE=Release
         - LIBCXX_BUILD=1
-        - EXTRA_FLAGS="-stdlib=libc++"
     # Clang w/ 32bit libc++
     - compiler: clang
       addons:
@@ -69,7 +67,6 @@ matrix:
         - COMPILER=clang++-3.8 C_COMPILER=clang-3.8 BUILD_TYPE=Debug
         - LIBCXX_BUILD=1
         - BUILD_32_BITS=ON
-        - EXTRA_FLAGS="-stdlib=libc++ -m32"
     # Clang w/ 32bit libc++
     - compiler: clang
       addons:
@@ -81,7 +78,6 @@ matrix:
         - COMPILER=clang++-3.8 C_COMPILER=clang-3.8 BUILD_TYPE=Release
         - LIBCXX_BUILD=1
         - BUILD_32_BITS=ON
-        - EXTRA_FLAGS="-stdlib=libc++ -m32"
     # Clang w/ libc++, ASAN, UBSAN
     - compiler: clang
       addons:
@@ -91,7 +87,7 @@ matrix:
       env:
         - COMPILER=clang++-3.8 C_COMPILER=clang-3.8 BUILD_TYPE=Debug
         - LIBCXX_BUILD=1 LIBCXX_SANITIZER="Undefined;Address"
-        - EXTRA_FLAGS="-stdlib=libc++ -g -O2 -fno-omit-frame-pointer -fsanitize=undefined,address -fno-sanitize-recover=all"
+        - EXTRA_FLAGS="-g -O2 -fno-omit-frame-pointer -fsanitize=undefined,address -fno-sanitize-recover=all"
         - UBSAN_OPTIONS=print_stacktrace=1
     # Clang w/ libc++ and MSAN
     - compiler: clang
@@ -102,7 +98,7 @@ matrix:
       env:
         - COMPILER=clang++-3.8 C_COMPILER=clang-3.8 BUILD_TYPE=Debug
         - LIBCXX_BUILD=1 LIBCXX_SANITIZER=MemoryWithOrigins
-        - EXTRA_FLAGS="-stdlib=libc++ -g -O2 -fno-omit-frame-pointer -fsanitize=memory -fsanitize-memory-track-origins"
+        - EXTRA_FLAGS="-g -O2 -fno-omit-frame-pointer -fsanitize=memory -fsanitize-memory-track-origins"
     # Clang w/ libc++ and MSAN
     - compiler: clang
       addons:
@@ -112,17 +108,17 @@ matrix:
       env:
         - COMPILER=clang++-3.8 C_COMPILER=clang-3.8 BUILD_TYPE=RelWithDebInfo
         - LIBCXX_BUILD=1 LIBCXX_SANITIZER=Thread
-        - EXTRA_FLAGS="-stdlib=libc++ -g -O2 -fno-omit-frame-pointer -fsanitize=thread -fno-sanitize-recover=all"
+        - EXTRA_FLAGS="-g -O2 -fno-omit-frame-pointer -fsanitize=thread -fno-sanitize-recover=all"
     - os: osx
       osx_image: xcode8.3
       compiler: clang
       env:
-        - COMPILER=clang++ BUILD_TYPE=Debug
+        - COMPILER=clang++ C_COMPILER=clang BUILD_TYPE=Debug
     - os: osx
       osx_image: xcode8.3
       compiler: clang
       env:
-        - COMPILER=clang++ BUILD_TYPE=Release
+        - COMPILER=clang++ C_COMPILER=clang BUILD_TYPE=Release
     - os: osx
       osx_image: xcode8.3
       compiler: gcc
@@ -130,9 +126,7 @@ matrix:
         - COMPILER=g++-7 C_COMPILER=gcc-7  BUILD_TYPE=Debug
 
 before_script:
-  - if [ -n "${LIBCXX_BUILD}" ]; then
-      source .travis-libcxx-setup.sh;
-    fi
+  - source .travis.sh;
   - mkdir -p build && cd build
 
 before_install:
@@ -164,7 +158,7 @@ install:
     fi
 
 script:
-  - cmake -DCMAKE_C_COMPILER=${C_COMPILER} -DCMAKE_CXX_COMPILER=${COMPILER} -DCMAKE_BUILD_TYPE=${BUILD_TYPE} -DCMAKE_CXX_FLAGS="${EXTRA_FLAGS}" -DCMAKE_C_FLAGS="${EXTRA_FLAGS}" -DBUILD_TESTING=ON ..
+  - cmake -DCMAKE_C_COMPILER=${C_COMPILER} -DCMAKE_CXX_COMPILER=${COMPILER} -DCMAKE_BUILD_TYPE=${BUILD_TYPE} -DCMAKE_CXX_FLAGS="${EXTRA_CXX_FLAGS}" -DCMAKE_C_FLAGS="${EXTRA_C_FLAGS}" -DBUILD_TESTING=ON ..
   - make
   - ctest -C ${BUILD_TYPE} --output-on-failure
 

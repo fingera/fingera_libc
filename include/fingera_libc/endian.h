@@ -125,6 +125,10 @@ static inline uint64_t read_big_64(const void *buf) {
   return htobe64(*(const uint64_t *)buf);
 }
 
+static inline void write_little_32(void *buf, uint32_t value) {
+  *(uint32_t *)buf = htole32(value);
+}
+
 static inline uint32_t le32(const void *mem, size_t offset) {
   return read_little_32((const char *)mem + offset);
 }
