@@ -36,10 +36,10 @@ install:
   # git bash conflicts with MinGW makefiles
   - if "%CMAKE_GENERATOR%"=="MinGW Makefiles" (set "PATH=%PATH:C:\Program Files\Git\usr\bin;=%")
   - if not "%CXX_PATH%"=="" (set "PATH=%PATH%;%CXX_PATH%")
+  - git submodule update --init --recursive
 
 
 build_script:
-  - git submodule update --init --recursive
   - md _build -Force
   - cd _build
   - echo %configuration%
