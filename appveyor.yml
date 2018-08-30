@@ -1,5 +1,4 @@
 version: '{build}'
-shallow_clone: true
 
 configuration:
   - Debug
@@ -36,6 +35,7 @@ install:
   # git bash conflicts with MinGW makefiles
   - if "%CMAKE_GENERATOR%"=="MinGW Makefiles" (set "PATH=%PATH:C:\Program Files\Git\usr\bin;=%")
   - if not "%CXX_PATH%"=="" (set "PATH=%PATH%;%CXX_PATH%")
+  - git submodule update --init --recursive
 
 
 build_script:

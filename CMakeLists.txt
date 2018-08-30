@@ -3,7 +3,6 @@ cmake_minimum_required(VERSION 3.5)
 set( CMAKE_C_STANDARD 99 )
 set( CMAKE_CXX_STANDARD 11 )
 
-
 option(BUILD_TESTING "Enable test (depends on googletest)." OFF)
 option(FINGERA_LIBC_ENABLE_BENCHMARKS "Benchmarks" OFF)
 
@@ -23,11 +22,14 @@ add_library(fingera_libc
   src/btc/base58_check.c
   src/btc/chain_parameters.c
   src/btc/address.c
+  src/btc/key.c
 )
 
-target_link_libraries(fingera_libc)
+add_subdirectory(external)
+
+target_link_libraries(fingera_libc secp256k1)
 target_include_directories(fingera_libc
-  PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+  PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include ${Secp256k1_INCLUDE_DIR})
 
 if (${BUILD_TESTING} STREQUAL "ON")
   include(CTest)
