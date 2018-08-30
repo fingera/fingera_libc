@@ -5,8 +5,8 @@ if (${BUILD_TESTING} STREQUAL "ON")
   set(BUILD_GTEST ON)
   set(gtest_disable_pthreads ON)
   add_subdirectory(googletest)
-  target_include_directories(gtest_main
-    PUBLIC googletest/include)
+  #target_include_directories(gtest_main
+  #  PUBLIC googletest/include)
 endif()
 
 # secp256k1
