@@ -4,6 +4,7 @@ set( CMAKE_C_STANDARD 99 )
 set( CMAKE_CXX_STANDARD 11 )
 
 option(BUILD_TESTING "Enable test (depends on googletest)." OFF)
+option(BUILD_VALGRIND "Enable valgrind (depends on BUILD_TESTING)." OFF)
 option(FINGERA_LIBC_ENABLE_BENCHMARKS "Benchmarks" OFF)
 
 add_library(fingera_libc
@@ -14,6 +15,7 @@ add_library(fingera_libc
   src/compress_integer.c
   src/error.c
   src/random.c
+  src/cleanse.c
   src/hash/ripemd160.c
   src/hash/sha1.c
   src/hash/sha2.c
@@ -29,7 +31,7 @@ add_subdirectory(external)
 
 target_link_libraries(fingera_libc secp256k1)
 target_include_directories(fingera_libc
-  PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include ${Secp256k1_INCLUDE_DIR})
+  PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 if (${BUILD_TESTING} STREQUAL "ON")
   include(CTest)

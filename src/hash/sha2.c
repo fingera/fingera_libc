@@ -1,3 +1,4 @@
+#include <fingera_libc/cleanse.h>
 #include <fingera_libc/endian.h>
 #include <fingera_libc/hash/sha1.h>
 #include <stdint.h>
@@ -688,6 +689,8 @@ static void sha256_final(uint32_t *digest, const void *msg, size_t msg_len,
 
   *(uint64_t *)&last_chunk[56] = chunk_end;
   sha256_transform(digest, last_chunk);
+
+  fingera_cleanse(last_chunk, sizeof(last_chunk));
 }
 
 void fingera_sha2_256(const void *msg, size_t msg_len, void *hash) {
@@ -705,6 +708,8 @@ void fingera_sha2_256(const void *msg, size_t msg_len, void *hash) {
   out[5] = htobe32(digest[5]);
   out[6] = htobe32(digest[6]);
   out[7] = htobe32(digest[7]);
+
+  fingera_cleanse(digest, sizeof(digest));
 }
 
 static void sha512_final(uint64_t *digest, const void *msg, size_t msg_len,
@@ -728,6 +733,8 @@ static void sha512_final(uint64_t *digest, const void *msg, size_t msg_len,
 
   *(uint64_t *)&last_chunk[120] = chunk_end;
   sha512_transform(digest, last_chunk);
+
+  fingera_cleanse(last_chunk, sizeof(last_chunk));
 }
 
 void fingera_sha2_512(const void *msg, size_t msg_len, void *hash) {
@@ -746,6 +753,8 @@ void fingera_sha2_512(const void *msg, size_t msg_len, void *hash) {
   out[5] = htobe64(digest[5]);
   out[6] = htobe64(digest[6]);
   out[7] = htobe64(digest[7]);
+
+  fingera_cleanse(digest, sizeof(digest));
 }
 
 void fingera_hmac_sha256(const void *key, size_t key_len, const void *msg,
@@ -788,6 +797,9 @@ void fingera_hmac_sha256(const void *key, size_t key_len, const void *msg,
   for (i = 0; i < 8; i++) {
     out[i] = htobe32(digest_outter[i]);
   }
+
+  fingera_cleanse(digest_outter, sizeof(digest_outter));
+  fingera_cleanse(digest_inner, sizeof(digest_inner));
 }
 
 void fingera_hmac_sha512(const void *key, size_t key_len, const void *msg,
@@ -832,4 +844,6 @@ void fingera_hmac_sha512(const void *key, size_t key_len, const void *msg,
   for (i = 0; i < 8; i++) {
     out[i] = htobe64(digest_outter[i]);
   }
+  fingera_cleanse(digest_outter, sizeof(digest_outter));
+  fingera_cleanse(digest_inner, sizeof(digest_inner));
 }

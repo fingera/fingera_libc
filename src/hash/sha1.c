@@ -1,3 +1,4 @@
+#include <fingera_libc/cleanse.h>
 #include <fingera_libc/endian.h>
 #include <fingera_libc/hash/sha1.h>
 #include <stdint.h>
@@ -145,4 +146,7 @@ void fingera_sha1(const void *msg, size_t msg_len, void *hash) {
   out[2] = htobe32(digest[2]);
   out[3] = htobe32(digest[3]);
   out[4] = htobe32(digest[4]);
+
+  fingera_cleanse(digest, sizeof(digest));
+  fingera_cleanse(last_chunk, sizeof(last_chunk));
 }

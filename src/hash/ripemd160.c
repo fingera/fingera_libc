@@ -1,4 +1,5 @@
 
+#include <fingera_libc/cleanse.h>
 #include <fingera_libc/endian.h>
 #include <fingera_libc/hash/ripemd160.h>
 #include <stdint.h>
@@ -311,4 +312,7 @@ void fingera_ripemd160(const void *msg, size_t msg_len, void *hash) {
   out[2] = htole32(digest[2]);
   out[3] = htole32(digest[3]);
   out[4] = htole32(digest[4]);
+
+  fingera_cleanse(digest, sizeof(digest));
+  fingera_cleanse(last_chunk, sizeof(last_chunk));
 }

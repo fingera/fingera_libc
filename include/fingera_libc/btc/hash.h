@@ -15,6 +15,7 @@ extern "C" {
 #endif
 
 #include <stddef.h>
+#include <stdint.h>
 
 /**
  * @brief 计算hash160 ripemd160(sha256(x))
@@ -43,6 +44,18 @@ void fingera_btc_hash256(const void *msg, size_t msg_len, void *hash);
  * @param blocks 输出输入数量
  */
 void fingera_btc_hash256_d64(void *out, const void *in, size_t blocks);
+
+/**
+ * @brief 比特币bip32 HASH
+ *
+ * @param chain_code 32字节
+ * @param child 4字节
+ * @param header 1字节
+ * @param data32 32字节
+ * @param out64 输出64字节HASH值
+ */
+void fingera_btc_bip32_hash(const void *chain_code, uint32_t child,
+                            uint8_t header, const void *data32, void *out64);
 
 #if defined(__cplusplus)
 }

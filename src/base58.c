@@ -1,6 +1,7 @@
 #include <assert.h>
 #include <ctype.h>
 #include <fingera_libc/base58.h>
+#include <fingera_libc/cleanse.h>
 #include <fingera_libc/sl/buffer.h>
 #include <stdint.h>
 #include <stdlib.h>
@@ -63,6 +64,7 @@ size_t fingera_to_base58(const void *buf, size_t buf_size, char *str) {
   memset(str, '1', zeroes);
   while (iter != b58 + size) str[zeroes++] = BASE58_ENCODE[*iter++];
 
+  fingera_cleanse(b58, size);
   FREE_BUFFER(b58);
 
   return zeroes;
@@ -89,6 +91,7 @@ size_t fingera_from_base58(const char *str, size_t str_len, void *buf) {
     // Decode base58 character
     int carry = BASE58_DECODE[(uint8_t)*str];
     if (carry == -1) {
+      fingera_cleanse(b256, size);
       FREE_BUFFER(b256);
       return 0;
     }
@@ -106,6 +109,7 @@ size_t fingera_from_base58(const char *str, size_t str_len, void *buf) {
   // Skip trailing spaces.
   while (isspace(*str)) str++;
   if (*str != 0) {
+    fingera_cleanse(b256, size);
     FREE_BUFFER(b256);
     return 0;
   }
@@ -116,6 +120,7 @@ size_t fingera_from_base58(const char *str, size_t str_len, void *buf) {
   while (it != b256 + size) {
     out[zeroes++] = *it++;
   }
+  fingera_cleanse(b256, size);
   FREE_BUFFER(b256);
   return zeroes;
 }

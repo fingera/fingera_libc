@@ -2,7 +2,7 @@
 # google test
 if (${BUILD_TESTING} STREQUAL "ON")
   set(BUILD_GMOCK OFF)
-  set(BUILD_GTEST ON)
+  set(INSTALL_GTEST OFF)
   set(gtest_disable_pthreads ON)
   set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
   add_subdirectory(googletest)
@@ -19,4 +19,4 @@ add_definitions(-DUSE_SCALAR_8X32=1)
 add_library(secp256k1 secp256k1/src/secp256k1.c)
 target_link_libraries(secp256k1)
 target_include_directories(secp256k1
-  PUBLIC secp256k1/include secp256k1)
+  PUBLIC secp256k1/include PRIVATE secp256k1)
