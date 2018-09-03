@@ -1,6 +1,6 @@
 #include <fingera_libc/btc/base58_check.h>
 #include <fingera_libc/btc/hash.h>
-#include <fingera_libc/hex.h>
+#include <fingera_libc/cleanse.h>
 #include <fingera_libc/sl/buffer.h>
 
 #include <stdint.h>
@@ -24,6 +24,7 @@ size_t fingera_to_base58_check(const void *buf, size_t buf_size,
 
   size_t r = fingera_to_base58(buffer, size_of_all, str);
 
+  fingera_cleanse(buffer, size_of_all);
   FREE_BUFFER(buffer);
 
   return r;

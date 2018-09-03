@@ -87,13 +87,13 @@ void fingera_btc_key_get_pub(const void *key32, void *pubkey64);
  *
  * @param encoded_pubkey33 输入公钥的压缩格式
  * @param chain32 输入的chain code
- * @param in_out_pubkey64 输入时是公钥的未压缩 输出派生后的公钥
+ * @param in_out_pubkey33 输出公钥的压缩格式
  * @param out_chain32 输出派生后的chain code
  * @param child
  * @return int 非0成功 0失败
  */
 int fingera_btc_pubkey_derive(const void *encoded_pubkey33, const void *chain32,
-                              void *in_out_pubkey64, void *out_chain32,
+                              void *out_pubkey33, void *out_chain32,
                               uint32_t child);
 
 /**
@@ -165,7 +165,7 @@ void fingera_btc_pubkey_keyid(const void *pubkey64, int compress,
                               void *keyid20);
 
 uint32_t fingera_btc_key_fingerprint(const void *key32, int compress);
-uint32_t fingera_btc_pubkey_fingerprint(const void *pubkey64, int compress);
+uint32_t fingera_btc_pubkey_fingerprint(const void *pubkey33);
 
 #if defined(__cplusplus)
 }

@@ -113,29 +113,20 @@ TestVector test3 = TestVector(
     "q6vcBcBUdJCVVFceUvJFjaPdGZ2y9WACViL4L",
     0);
 
-void dump_compress(const void* pubkey64) {
-  uint8_t encoded_pubkey[33];
-  fingera_btc_pubkey_encode(pubkey64, encoded_pubkey, 33);
-  fingera_hex_dump(encoded_pubkey, sizeof(encoded_pubkey), 1);
+bool compare(fingera_ex_extension& ex1, fingera_ex_extension& ex2) {
+  return ex1.child == ex2.child && ex1.depth == ex2.depth &&
+         ex1.fingerprint == ex2.fingerprint &&
+         memcmp(ex1.chain_code, ex2.chain_code, sizeof(ex1.chain_code)) == 0;
 }
 
-void dump_fingera_ex_pubkey(fingera_ex_pubkey* pubkey) {
-  printf("depth(%d) fingerprint(%08lx) child(%lu)\n", pubkey->ext.depth,
-         pubkey->ext.fingerprint, pubkey->ext.child);
-  fingera_hex_dump(pubkey->ext.chain_code, 32, 1);
-  printf("\n");
-  // fingera_hex_dump(pubkey->pubkey, 64, 1);
-  dump_compress(pubkey->pubkey);
-  printf("\n");
+bool compare(fingera_ex_key& key1, fingera_ex_key& key2) {
+  return memcmp(key1.key, key2.key, sizeof(key1.key)) == 0 &&
+         compare(key1.ext, key2.ext);
 }
 
-void dump_fingera_ex_key(fingera_ex_key* key) {
-  printf("depth(%d) fingerprint(%08lx) child(%lu)\n", key->ext.depth,
-         key->ext.fingerprint, key->ext.child);
-  fingera_hex_dump(key->ext.chain_code, 32, 1);
-  printf("\n");
-  fingera_hex_dump(key->key, 32, 1);
-  printf("\n");
+bool compare(fingera_ex_pubkey& key1, fingera_ex_pubkey& key2) {
+  return memcmp(key1.c_pubkey, key2.c_pubkey, sizeof(key1.c_pubkey)) == 0 &&
+         compare(key1.ext, key2.ext);
 }
 
 static void RunTest(const TestVector& test) {
@@ -143,47 +134,56 @@ static void RunTest(const TestVector& test) {
   seed.resize(fingera_from_hex_length(test.strHexMaster.size()));
   fingera_from_hex(test.strHexMaster.c_str(), test.strHexMaster.size(),
                    &seed[0]);
-  fingera_ex_key key;
-  fingera_ex_pubkey pubkey;
+  fingera_ex_key key = {0};
+  fingera_ex_pubkey pubkey = {0};
   fingera_exkey_init(&key, seed.data(), seed.size());
   fingera_exkey_get_pub(&key, &pubkey);
   for (const TestDerivation& derive : test.vDerive) {
-    /*
-    unsigned char data[74];
-    key.Encode(data);
-    pubkey.Encode(data);
+    char str_key[256];
+    fingera_ex_key dec_key = {0};
+    fingera_ex_pubkey dec_pub_key = {0};
+    EXPECT_TRUE(fingera_exkey_string_max_length() < 256);
 
-    // Test private key
-    BOOST_CHECK(EncodeExtKey(key) == derive.prv);
-    BOOST_CHECK(DecodeExtKey(derive.prv) ==
-                key);  // ensure a base58 decoded key also matches
+    size_t str_key_size =
+        fingera_exkey_to_string(&key, str_key, &g_mainnet_chain_parameters);
+    str_key[str_key_size] = '\0';
+    EXPECT_EQ(derive.prv, str_key);
 
-    // Test public key
-    BOOST_CHECK(EncodeExtPubKey(pubkey) == derive.pub);
-    BOOST_CHECK(DecodeExtPubKey(derive.pub) ==
-                pubkey);  // ensure a base58 decoded pubkey also matches
-    */
+    EXPECT_TRUE(fingera_exkey_from_string(str_key, str_key_size, &dec_key,
+                                          &g_mainnet_chain_parameters));
+    EXPECT_TRUE(compare(key, dec_key));
+
+    str_key_size = fingera_expubkey_to_string(&pubkey, str_key,
+                                              &g_mainnet_chain_parameters);
+    str_key[str_key_size] = '\0';
+    EXPECT_EQ(derive.pub, str_key);
+    EXPECT_TRUE(fingera_expubkey_from_string(
+        str_key, str_key_size, &dec_pub_key, &g_mainnet_chain_parameters));
+    EXPECT_TRUE(compare(pubkey, dec_pub_key));
+
     // Derive new keys
-    fingera_ex_key keyNew;
+    fingera_ex_key keyNew = {0};
     EXPECT_TRUE(fingera_exkey_derive(&key, &keyNew, derive.nChild,
                                      fingera_btc_key_fingerprint(key.key, 1)));
 
-    fingera_ex_pubkey pubkeyNew;
+    fingera_ex_pubkey pubkeyNew = {0};
     fingera_exkey_get_pub(&keyNew, &pubkeyNew);
     if (!(derive.nChild & 0x80000000)) {
       // Compare with public derivation
       fingera_ex_pubkey pubkeyNew2;
       EXPECT_TRUE(fingera_expubkey_derive(
           &pubkey, &pubkeyNew2, derive.nChild,
-          fingera_btc_pubkey_fingerprint(pubkey.pubkey, 1)));
+          fingera_btc_pubkey_fingerprint(pubkey.c_pubkey)));
 
       EXPECT_EQ(pubkeyNew.ext.child, pubkeyNew2.ext.child);
       EXPECT_EQ(pubkeyNew.ext.depth, pubkeyNew2.ext.depth);
       EXPECT_EQ(pubkeyNew.ext.fingerprint, pubkeyNew2.ext.fingerprint);
-      EXPECT_FALSE(memcmp(pubkeyNew.pubkey, pubkeyNew2.pubkey, 64));
+      EXPECT_FALSE(memcmp(pubkeyNew.c_pubkey, pubkeyNew2.c_pubkey, 33));
       EXPECT_FALSE(
           memcmp(pubkeyNew.ext.chain_code, pubkeyNew2.ext.chain_code, 32));
     }
+    memcpy(&key, &keyNew, sizeof(keyNew));
+    memcpy(&pubkey, &pubkeyNew, sizeof(pubkeyNew));
   }
 }
 

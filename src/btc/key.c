@@ -420,20 +420,22 @@ void fingera_btc_key_get_pub(const void* key32, void* pubkey64) {
 }
 
 int fingera_btc_pubkey_derive(const void* encoded_pubkey33, const void* chain32,
-                              void* out_pubkey64, void* out_chain32,
+                              void* out_pubkey33, void* out_chain32,
                               uint32_t child) {
   assert((child >> 31) == 0);
   const uint8_t* pubkey33 = (const uint8_t*)encoded_pubkey33;
   assert(pubkey33[0] == 2 || pubkey33[0] == 3);
   uint8_t out[64];
-  secp256k1_pubkey* pubkey = (secp256k1_pubkey*)out_pubkey64;
+  secp256k1_pubkey pubkey;
+  if (!fingera_btc_pubkey_decode(encoded_pubkey33, 33, &pubkey)) return 0;
   fingera_btc_bip32_hash(chain32, child, pubkey33[0], pubkey33 + 1, out);
   memcpy(out_chain32, out + 32, 32);
-  if (!secp256k1_ec_pubkey_parse(secp256k1_context_verify, pubkey,
+  if (!secp256k1_ec_pubkey_parse(secp256k1_context_verify, &pubkey,
                                  (const unsigned char*)encoded_pubkey33, 33))
     return 0;
-  if (!secp256k1_ec_pubkey_tweak_add(secp256k1_context_verify, pubkey, out))
+  if (!secp256k1_ec_pubkey_tweak_add(secp256k1_context_verify, &pubkey, out))
     return 0;
+  if (!fingera_btc_pubkey_encode(&pubkey, out_pubkey33, 33)) return 0;
   return 1;
 }
 
@@ -578,8 +580,8 @@ uint32_t fingera_btc_key_fingerprint(const void* key32, int compress) {
   fingera_btc_key_keyid(key32, compress, keyid);
   return read_little_32(keyid);
 }
-uint32_t fingera_btc_pubkey_fingerprint(const void* pubkey64, int compress) {
+uint32_t fingera_btc_pubkey_fingerprint(const void* pubkey33) {
   uint8_t keyid[20];
-  fingera_btc_pubkey_keyid(pubkey64, compress, keyid);
+  fingera_btc_hash160(pubkey33, 33, keyid);
   return read_little_32(keyid);
 }
