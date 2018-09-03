@@ -7,11 +7,12 @@ add_executable( test_fingera
   hash.cpp
   base32.cpp
   base58.cpp
+  random.cpp
   btc/bech32.cpp
   btc/btc_bech32.cpp
   btc/address.cpp
-  random.cpp
   btc/key.cpp
+  btc/exkey.cpp
 )
 
 target_link_libraries( test_fingera fingera_libc gtest_main )

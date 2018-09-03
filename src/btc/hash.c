@@ -47,7 +47,7 @@ void fingera_btc_bip32_hash(const void *chain_code, uint32_t child,
   ptr++;
   memcpy(ptr, data32, 32);
   ptr += 32;
-  write_little_32(ptr, child);
+  write_big_32(ptr, child);
   fingera_hmac_sha512(chain_code, 32, buffer, sizeof(buffer), out64);
   fingera_cleanse(buffer, sizeof(buffer));
 }

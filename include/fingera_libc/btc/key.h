@@ -13,12 +13,13 @@ extern "C" {
 #endif
 
 #include <stddef.h>
+#include <stdint.h>
 
-static const unsigned int BTC_PRIVATE_KEY_SIZE = 279;
-static const unsigned int BTC_COMPRESSED_PRIVATE_KEY_SIZE = 214;
-static const unsigned int BTC_PUBLIC_KEY_SIZE = 65;
-static const unsigned int BTC_COMPRESSED_PUBLIC_KEY_SIZE = 33;
-static const unsigned int BTC_SIGNATURE_SIZE = 72;
+#define BTC_PRIVATE_KEY_SIZE 279u
+#define BTC_COMPRESSED_PRIVATE_KEY_SIZE 214u
+#define BTC_PUBLIC_KEY_SIZE 65u
+#define BTC_COMPRESSED_PUBLIC_KEY_SIZE 33u
+#define BTC_SIGNATURE_SIZE 72u
 
 /**
  * @brief 初始化
@@ -37,6 +38,19 @@ void fingera_btc_key_uninit();
  * @param key 32字节的内存存储私钥
  */
 void fingera_btc_key_new(void *key32);
+
+/**
+ * @brief 派生私钥(32字节) 和chain_code(32字节)
+ *
+ * @param key32 32字节私钥
+ * @param chain32 32字节chain_code
+ * @param out_key32 32字节输出私钥
+ * @param out_chain32 32字节输出chain_code
+ * @param child 派生时传入的一个32位整数
+ * @return int 非0成功 0失败
+ */
+int fingera_btc_key_derive(const void *key32, const void *chain32,
+                           void *out_key32, void *out_chain32, uint32_t child);
 
 /**
  * @brief 比特币私钥格式编码
@@ -67,6 +81,20 @@ int fingera_btc_key_decode(const void *encoded_key, size_t encoded_key_len,
  * @param pubkey 公钥64字节的内存
  */
 void fingera_btc_key_get_pub(const void *key32, void *pubkey64);
+
+/**
+ * @brief 派生公钥(64字节) 和chain_code(32字节)
+ *
+ * @param encoded_pubkey33 输入公钥的压缩格式
+ * @param chain32 输入的chain code
+ * @param in_out_pubkey64 输入时是公钥的未压缩 输出派生后的公钥
+ * @param out_chain32 输出派生后的chain code
+ * @param child
+ * @return int 非0成功 0失败
+ */
+int fingera_btc_pubkey_derive(const void *encoded_pubkey33, const void *chain32,
+                              void *in_out_pubkey64, void *out_chain32,
+                              uint32_t child);
 
 /**
  * @brief 比特币公钥编码
@@ -131,6 +159,13 @@ int fingera_btc_signature_decode(const void *encoded_sig,
  */
 int fingera_btc_key_verify(const void *pubkey64, const void *hash32,
                            const void *signatures64);
+
+void fingera_btc_key_keyid(const void *key32, int compress, void *keyid20);
+void fingera_btc_pubkey_keyid(const void *pubkey64, int compress,
+                              void *keyid20);
+
+uint32_t fingera_btc_key_fingerprint(const void *key32, int compress);
+uint32_t fingera_btc_pubkey_fingerprint(const void *pubkey64, int compress);
 
 #if defined(__cplusplus)
 }

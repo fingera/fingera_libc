@@ -111,22 +111,37 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <string.h>
 
 static inline uint32_t read_little_32(const void *buf) {
-  return htole32(*(const uint32_t *)buf);
+  uint32_t value;
+  memcpy(&value, buf, sizeof(value));
+  return htole32(value);
 }
 static inline uint64_t read_little_64(const void *buf) {
-  return htole64(*(const uint64_t *)buf);
+  uint64_t value;
+  memcpy(&value, buf, sizeof(value));
+  return htole64(value);
 }
 static inline uint32_t read_big_32(const void *buf) {
-  return htobe32(*(const uint32_t *)buf);
+  uint32_t value;
+  memcpy(&value, buf, sizeof(value));
+  return htobe32(value);
 }
 static inline uint64_t read_big_64(const void *buf) {
-  return htobe64(*(const uint64_t *)buf);
+  uint64_t value;
+  memcpy(&value, buf, sizeof(value));
+  return htobe64(value);
 }
 
 static inline void write_little_32(void *buf, uint32_t value) {
-  *(uint32_t *)buf = htole32(value);
+  value = htole32(value);
+  memcpy(buf, &value, sizeof(value));
+}
+
+static inline void write_big_32(void *buf, uint32_t value) {
+  value = htobe32(value);
+  memcpy(buf, &value, sizeof(value));
 }
 
 static inline uint32_t le32(const void *mem, size_t offset) {

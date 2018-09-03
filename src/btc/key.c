@@ -1,4 +1,5 @@
 #include <assert.h>
+#include <fingera_libc/btc/hash.h>
 #include <fingera_libc/btc/key.h>
 #include <fingera_libc/cleanse.h>
 #include <fingera_libc/endian.h>
@@ -356,6 +357,33 @@ void fingera_btc_key_new(void* key32) {
   } while (!secp256k1_ec_seckey_verify(secp256k1_context_sign, key32));
 }
 
+int fingera_btc_key_derive(const void* key32, const void* chain32,
+                           void* out_key32, void* out_chain32, uint32_t child) {
+  uint8_t out[64];
+  int ret = 1;
+  if ((child >> 31) == 0) {
+    uint8_t pubkey64[64];
+    uint8_t encoded_pubkey[BTC_COMPRESSED_PUBLIC_KEY_SIZE];
+    fingera_btc_key_get_pub(key32, pubkey64);
+    ret = fingera_btc_pubkey_encode(pubkey64, encoded_pubkey,
+                                    sizeof(encoded_pubkey));
+    fingera_btc_bip32_hash(chain32, child, encoded_pubkey[0],
+                           encoded_pubkey + 1, out);
+    fingera_cleanse(pubkey64, sizeof(pubkey64));
+    fingera_cleanse(encoded_pubkey, sizeof(encoded_pubkey));
+  } else {
+    fingera_btc_bip32_hash(chain32, child, 0, key32, out);
+  }
+  if (ret) {
+    memcpy(out_key32, key32, 32);
+    memcpy(out_chain32, out + 32, 32);
+    ret = secp256k1_ec_privkey_tweak_add(secp256k1_context_sign,
+                                         (unsigned char*)out_key32, out);
+  }
+  fingera_cleanse(out, sizeof(out));
+  return ret;
+}
+
 int fingera_btc_key_encode(const void* key32, void* encoded_key,
                            size_t encoded_key_len) {
   assert(encoded_key_len == BTC_PRIVATE_KEY_SIZE ||
@@ -389,6 +417,24 @@ void fingera_btc_key_get_pub(const void* key32, void* pubkey64) {
                                      (const unsigned char*)key32);
   assert(r);
   (void)r;
+}
+
+int fingera_btc_pubkey_derive(const void* encoded_pubkey33, const void* chain32,
+                              void* out_pubkey64, void* out_chain32,
+                              uint32_t child) {
+  assert((child >> 31) == 0);
+  const uint8_t* pubkey33 = (const uint8_t*)encoded_pubkey33;
+  assert(pubkey33[0] == 2 || pubkey33[0] == 3);
+  uint8_t out[64];
+  secp256k1_pubkey* pubkey = (secp256k1_pubkey*)out_pubkey64;
+  fingera_btc_bip32_hash(chain32, child, pubkey33[0], pubkey33 + 1, out);
+  memcpy(out_chain32, out + 32, 32);
+  if (!secp256k1_ec_pubkey_parse(secp256k1_context_verify, pubkey,
+                                 (const unsigned char*)encoded_pubkey33, 33))
+    return 0;
+  if (!secp256k1_ec_pubkey_tweak_add(secp256k1_context_verify, pubkey, out))
+    return 0;
+  return 1;
 }
 
 int fingera_btc_pubkey_encode(const void* pubkey64, void* encoded_pubkey,
@@ -509,4 +555,31 @@ int fingera_btc_key_verify(const void* pubkey64, const void* hash32,
                                       sig);
   return secp256k1_ecdsa_verify(secp256k1_context_verify, &sig_normalized,
                                 (const unsigned char*)hash32, pubkey);
+}
+
+void fingera_btc_key_keyid(const void* key32, int compress, void* keyid20) {
+  uint8_t pubkey[64];
+  fingera_btc_key_get_pub(key32, pubkey);
+  fingera_btc_pubkey_keyid(pubkey, compress, keyid20);
+}
+
+void fingera_btc_pubkey_keyid(const void* pubkey64, int compress,
+                              void* keyid20) {
+  size_t encoded_len =
+      compress ? BTC_COMPRESSED_PUBLIC_KEY_SIZE : BTC_PUBLIC_KEY_SIZE;
+  uint8_t encoded_pubkey[BTC_PUBLIC_KEY_SIZE];
+  int r = fingera_btc_pubkey_encode(pubkey64, encoded_pubkey, encoded_len);
+  assert(r);
+  fingera_btc_hash160(encoded_pubkey, encoded_len, keyid20);
+}
+
+uint32_t fingera_btc_key_fingerprint(const void* key32, int compress) {
+  uint8_t keyid[20];
+  fingera_btc_key_keyid(key32, compress, keyid);
+  return read_little_32(keyid);
+}
+uint32_t fingera_btc_pubkey_fingerprint(const void* pubkey64, int compress) {
+  uint8_t keyid[20];
+  fingera_btc_pubkey_keyid(pubkey64, compress, keyid);
+  return read_little_32(keyid);
 }

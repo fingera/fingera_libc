@@ -25,6 +25,7 @@ add_library(fingera_libc
   src/btc/chain_parameters.c
   src/btc/address.c
   src/btc/key.c
+  src/btc/exkey.c
 )
 
 add_subdirectory(external)
