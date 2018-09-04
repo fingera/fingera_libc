@@ -12,6 +12,8 @@
 extern "C" {
 #endif
 
+#include <fingera_libc/btc/base58_check.h>
+#include <fingera_libc/btc/chain_parameters.h>
 #include <stddef.h>
 #include <stdint.h>
 
@@ -39,6 +41,15 @@ void fingera_btc_key_uninit();
  */
 void fingera_btc_key_new(void *key32);
 
+static inline size_t fingera_key_string_max_length() {
+  return fingera_to_base58_check_length(32, 8);
+}
+size_t fingera_btc_key_to_string(const void *key32, char *key_str,
+                                 int is_compressed,
+                                 const chain_parameters *param);
+int fingera_btc_key_from_string(const char *key_str, size_t str_len,
+                                void *key32, int *is_compressed,
+                                const chain_parameters *param);
 /**
  * @brief 派生私钥(32字节) 和chain_code(32字节)
  *

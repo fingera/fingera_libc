@@ -1,13 +1,13 @@
 #include <fingera_libc/btc/chain_parameters.h>
 
 chain_parameters g_mainnet_chain_parameters = {
-    .prefix_pubkey_address = "\0",
+    .prefix_pubkey_address = "\x00",
     .prefix_pubkey_address_size = 1,
 
-    .prefix_script_address = "\5",
+    .prefix_script_address = "\x05",
     .prefix_script_address_size = 1,
 
-    .prefix_secret_key = "\128",
+    .prefix_secret_key = "\x80",
     .prefix_secret_key_size = 1,
 
     .prefix_ext_public_key = "\x04\x88\xB2\x1E",

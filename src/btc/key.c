@@ -357,6 +357,47 @@ void fingera_btc_key_new(void* key32) {
   } while (!secp256k1_ec_seckey_verify(secp256k1_context_sign, key32));
 }
 
+size_t fingera_btc_key_to_string(const void* key32, char* key_str,
+                                 int is_compressed,
+                                 const chain_parameters* param) {
+  if (is_compressed) {
+    uint8_t buf33[33];
+    memcpy(buf33, key32, 32);
+    buf33[32] = 1;
+    int r =
+        fingera_to_base58_check(buf33, sizeof(buf33), param->prefix_secret_key,
+                                param->prefix_secret_key_size, key_str);
+    fingera_cleanse(buf33, sizeof(buf33));
+    return r;
+  }
+  return fingera_to_base58_check(key32, 32, param->prefix_secret_key,
+                                 param->prefix_secret_key_size, key_str);
+}
+int fingera_btc_key_from_string(const char* key_str, size_t str_len,
+                                void* key32, int* is_compressed,
+                                const chain_parameters* param) {
+  uint8_t buf[32 + 8];
+  assert(param->prefix_secret_key_size <= 8);
+  size_t size = fingera_from_base58_check(key_str, str_len, buf);
+  if (size <= 32) return 0;
+  size_t pre_size = size - 32;
+  if (param->prefix_secret_key_size != pre_size) {
+    if (param->prefix_secret_key_size != pre_size - 1) {
+      return 0;
+    }
+    if (buf[size - 1] != 1) {
+      return 0;
+    }
+    *is_compressed = 1;
+  } else {
+    *is_compressed = 0;
+  }
+  if (memcmp(buf, param->prefix_secret_key, param->prefix_secret_key_size) != 0)
+    return 0;
+  memcpy(key32, buf + param->prefix_secret_key_size, 32);
+  return 1;
+}
+
 int fingera_btc_key_derive(const void* key32, const void* chain32,
                            void* out_key32, void* out_chain32, uint32_t child) {
   uint8_t out[64];
